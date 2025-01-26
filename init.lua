@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -245,13 +245,72 @@ require('lazy').setup({
   { -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
     opts = {
-      signs = {
-        add = { text = '+' },
-        change = { text = '~' },
-        delete = { text = '_' },
-        topdelete = { text = '‾' },
-        changedelete = { text = '~' },
-      },
+      on_attach = function(bufnr)
+        local gitsigns = require 'gitsigns'
+
+        local function map(mode, l, r, opts)
+          opts = opts or {}
+          opts.buffer = bufnr
+          vim.keymap.set(mode, l, r, opts)
+        end
+
+        -- Navigation
+        map('n', ']c', function()
+          if vim.wo.diff then
+            vim.cmd.normal { ']c', bang = true }
+          else
+            gitsigns.nav_hunk 'next'
+          end
+        end)
+
+        map('n', '[c', function()
+          if vim.wo.diff then
+            vim.cmd.normal { '[c', bang = true }
+          else
+            gitsigns.nav_hunk 'prev'
+          end
+        end)
+
+        -- Actions
+        map('n', '<leader>hs', gitsigns.stage_hunk)
+        map('n', '<leader>hr', gitsigns.reset_hunk)
+
+        map('v', '<leader>hs', function()
+          gitsigns.stage_hunk { vim.fn.line '.', vim.fn.line 'v' }
+        end)
+
+        map('v', '<leader>hr', function()
+          gitsigns.reset_hunk { vim.fn.line '.', vim.fn.line 'v' }
+        end)
+
+        map('n', '<leader>hS', gitsigns.stage_buffer)
+        map('n', '<leader>hR', gitsigns.reset_buffer)
+        map('n', '<leader>hp', gitsigns.preview_hunk)
+        map('n', '<leader>hi', gitsigns.preview_hunk_inline)
+
+        map('n', '<leader>hb', function()
+          gitsigns.blame_line { full = true }
+        end)
+
+        map('n', '<leader>hd', gitsigns.diffthis)
+
+        map('n', '<leader>hD', function()
+          gitsigns.diffthis '~'
+        end)
+
+        map('n', '<leader>hQ', function()
+          gitsigns.setqflist 'all'
+        end)
+        map('n', '<leader>hq', gitsigns.setqflist)
+
+        -- Toggles
+        map('n', '<leader>tb', gitsigns.toggle_current_line_blame)
+        map('n', '<leader>td', gitsigns.toggle_deleted)
+        map('n', '<leader>tw', gitsigns.toggle_word_diff)
+
+        -- Text object
+        map({ 'o', 'x' }, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
+      end,
     },
   },
 
@@ -388,7 +447,9 @@ require('lazy').setup({
         --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
         --   },
         -- },
-        -- pickers = {}
+        defaults = require('telescope.themes').get_dropdown {
+          preview = false,
+        },
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
@@ -844,6 +905,9 @@ require('lazy').setup({
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
     'folke/tokyonight.nvim',
+    opts = {
+      transparent = true,
+    },
     priority = 1000, -- Make sure to load this before all the other start plugins.
     init = function()
       -- Load the colorscheme here.
@@ -948,6 +1012,62 @@ require('lazy').setup({
   -- Or use telescope!
   -- In normal mode type `<space>sh` then write `lazy.nvim-plugin`
   -- you can continue same window with `<space>sr` which resumes last telescope search
+
+  { 'RRethy/vim-illuminate' },
+
+  { 'lewis6991/satellite.nvim' },
+
+  {
+    'nvim-lualine/lualine.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+  },
+
+  {
+    'stevearc/aerial.nvim',
+    opts = {},
+    -- Optional dependencies
+    dependencies = {
+      'nvim-treesitter/nvim-treesitter',
+      'nvim-tree/nvim-web-devicons',
+    },
+  },
+
+  {
+    'shellRaining/hlchunk.nvim',
+    event = { 'BufReadPre', 'BufNewFile' },
+    config = function()
+      require('hlchunk').setup {
+        chunk = { enable = true },
+        line_num = { enable = true },
+      }
+    end,
+  },
+
+  {
+    'folke/noice.nvim',
+    event = 'VeryLazy',
+    opts = {
+      -- add any options here
+      messages = { enabled = false },
+    },
+    dependencies = {
+      -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
+      'MunifTanjim/nui.nvim',
+      -- OPTIONAL:
+      --   `nvim-notify` is only needed, if you want to use the notification view.
+      --   If not available, we use `mini` as the fallback
+      'rcarriga/nvim-notify',
+    },
+  },
+
+  { 'sindrets/diffview.nvim' },
+
+  {
+    'catgoose/nvim-colorizer.lua',
+    event = 'BufReadPre',
+    opts = { -- set to setup table
+    },
+  },
 }, {
   ui = {
     -- If you are using a Nerd Font: set icons to an empty table which will use the
@@ -969,6 +1089,10 @@ require('lazy').setup({
     },
   },
 })
+
+vim.opt.relativenumber = true
+
+vim.keymap.set('n', '<leader>o', '<cmd>AerialNavToggle<CR>')
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
