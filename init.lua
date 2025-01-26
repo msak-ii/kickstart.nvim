@@ -907,6 +907,7 @@ require('lazy').setup({
     'folke/tokyonight.nvim',
     opts = {
       transparent = true,
+      styles = { sidebars = 'transparent', floats = 'transparent' },
     },
     priority = 1000, -- Make sure to load this before all the other start plugins.
     init = function()
@@ -1014,27 +1015,49 @@ require('lazy').setup({
   -- you can continue same window with `<space>sr` which resumes last telescope search
 
   { 'RRethy/vim-illuminate' },
-
+  {
+    'Wansmer/treesj',
+    keys = { '<space>m', '<space>j', '<space>s' },
+    dependencies = { 'nvim-treesitter/nvim-treesitter' },
+    config = function()
+      require('treesj').setup {}
+    end,
+  },
+  {
+    'catgoose/nvim-colorizer.lua',
+    event = 'BufReadPre',
+    opts = {},
+  },
+  {
+    'folke/noice.nvim',
+    event = 'VeryLazy',
+    opts = {
+      messages = { enabled = false },
+    },
+    dependencies = {
+      'MunifTanjim/nui.nvim',
+      'rcarriga/nvim-notify',
+    },
+  },
+  {
+    'karb94/neoscroll.nvim',
+    opts = {},
+  },
   { 'lewis6991/satellite.nvim' },
-
+  {
+    'numToStr/Comment.nvim',
+    opts = {},
+  },
   {
     'nvim-lualine/lualine.nvim',
     dependencies = { 'nvim-tree/nvim-web-devicons' },
   },
-
-  {
-    'stevearc/aerial.nvim',
-    opts = {},
-    -- Optional dependencies
-    dependencies = {
-      'nvim-treesitter/nvim-treesitter',
-      'nvim-tree/nvim-web-devicons',
-    },
-  },
-
   {
     'shellRaining/hlchunk.nvim',
-    event = { 'BufReadPre', 'BufNewFile' },
+    event = {
+      'BufReadPre',
+      'BufNewFile',
+    },
     config = function()
       require('hlchunk').setup {
         chunk = { enable = true },
@@ -1042,30 +1065,13 @@ require('lazy').setup({
       }
     end,
   },
-
-  {
-    'folke/noice.nvim',
-    event = 'VeryLazy',
-    opts = {
-      -- add any options here
-      messages = { enabled = false },
-    },
-    dependencies = {
-      -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
-      'MunifTanjim/nui.nvim',
-      -- OPTIONAL:
-      --   `nvim-notify` is only needed, if you want to use the notification view.
-      --   If not available, we use `mini` as the fallback
-      'rcarriga/nvim-notify',
-    },
-  },
-
   { 'sindrets/diffview.nvim' },
-
   {
-    'catgoose/nvim-colorizer.lua',
-    event = 'BufReadPre',
-    opts = { -- set to setup table
+    'stevearc/aerial.nvim',
+    opts = {},
+    dependencies = {
+      'nvim-treesitter/nvim-treesitter',
+      'nvim-tree/nvim-web-devicons',
     },
   },
 }, {
@@ -1091,7 +1097,6 @@ require('lazy').setup({
 })
 
 vim.opt.relativenumber = true
-
 vim.keymap.set('n', '<leader>o', '<cmd>AerialNavToggle<CR>')
 
 -- The line beneath this is called `modeline`. See `:help modeline`
